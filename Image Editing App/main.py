@@ -134,49 +134,106 @@ class Editor():
             picture_box.setText(f"Error: {str(e)}")
         picture_box.show()
 
-    def gray(self):
-        if self.image:
-            self.image = self.image.convert('L')
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def gray(self):
+    #     if self.image:
+    #         self.image = self.image.convert('L')
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
     
-    def mirror(self):
-        if self.image:
-            self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def mirror(self):
+    #     if self.image:
+    #         self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
     
-    def sharpness(self):
-        if self.image:
-            self.image = self.image.filter(ImageFilter.SHARPEN)
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def sharpness(self):
+    #     if self.image:
+    #         self.image = self.image.filter(ImageFilter.SHARPEN)
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
     
-    def saturation(self):
-        if self.image:
-            enhancer = ImageEnhance.Color(self.image)
-            self.image = enhancer.enhance(2.0)
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def saturation(self):
+    #     if self.image:
+    #         enhancer = ImageEnhance.Color(self.image)
+    #         self.image = enhancer.enhance(2.0)
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
     
-    def contrast(self):
-        if self.image:
-            enhancer = ImageEnhance.Contrast(self.image)
-            self.image = enhancer.enhance(2.0)
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def contrast(self):
+    #     if self.image:
+    #         enhancer = ImageEnhance.Contrast(self.image)
+    #         self.image = enhancer.enhance(2.0)
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
     
-    def blur(self):
-        if self.image:
-            self.image = self.image.filter(ImageFilter.BLUR)
-            saved_path = self.save_image()
-            self.show_image(saved_path)
+    # def blur(self):
+    #     if self.image:
+    #         self.image = self.image.filter(ImageFilter.BLUR)
+    #         saved_path = self.save_image()
+    #         self.show_image(saved_path)
+
+
     
     def reset(self):
         if self.original:
             self.image = self.original.copy()
             saved_path = self.save_image()
             self.show_image(saved_path)
+
+    def transformImage(self, transformation):
+        transformations = {
+            'B/W': lambda image: image.convert('L'),
+            'Mirror': lambda image: image.transpose(Image.FLIP_LEFT_RIGHT),
+            'Blur': lambda image: image.filter(ImageFilter.GaussianBlur(radius=3)),
+            'Sharpen': lambda image: image.filter(ImageFilter.SHARPEN),
+            'Color': lambda image: ImageEnhance.Color(image).enhance(2.0),
+            'Contrast': lambda image: ImageEnhance.Contrast(image).enhance(2.0),
+            '<<': lambda image: image.transpose(Image.ROTATE_90),
+            '>>': lambda image: image.transpose(Image.ROTATE_270),
+            'Reset': self.reset
+        }
+        transform_function = transformations.get(transformation)
+        if transform_function:
+            self.image = transform_function(self.image)
+            self.save_image()
+        self.save_image()
+        image_path = os.path.join(working_directory, self.save_folder, self.filename)
+        self.show_image()
+        
+
+    def apply_filter(self, filter_name):
+        if filter_name == 'Original':
+            self.image = self.original.copy()
+        else:
+            mapping = {
+                'B/W': lambda image: image.convert('L'),
+                'Mirror': lambda image: image.transpose(Image.FLIP_LEFT_RIGHT),
+                'Blur': lambda image: image.filter(ImageFilter.GaussianBlur(radius=3)),
+                'Sharpen': lambda image: image.filter(ImageFilter.SHARPEN),
+                'Color': lambda image: ImageEnhance.Color(image).enhance(2.0),
+                'Contrast': lambda image: ImageEnhance.Contrast(image).enhance(2.0),
+                '<<': lambda image: image.transpose(Image.ROTATE_90),
+                '>>': lambda image: image.transpose(Image.ROTATE_270),
+                'Reset': self.reset
+            }
+
+            filter_function = mapping.get(filter_name)
+            if filter_function:
+                self.image = filter_function(self.image)
+                self.save_image()
+                image_path = os.path.join(working_directory, self.save_folder, self.filename)
+                self.show_image(image_path)
+            pass
+
+        self.save_image()
+        image_path = os.path.join(working_directory, self.save_folder, self.filename)
+        self.show_image(image_path)
+
+
+def handle_filter():
+    if file_list.currentRow() >= 0:
+        selected_filter = filter_box.currentText()
+        main.apply_filter(selected_filter)
 
 # Display Image correctly
 def displayImage():
@@ -193,32 +250,14 @@ btn_folder.clicked.connect(get_working_directory)
 file_list.currentRowChanged.connect(displayImage)
 
 # Events - connecting all buttons
-gray.clicked.connect(main.gray)
-mirror.clicked.connect(main.mirror)
-sharpness.clicked.connect(main.sharpness)
-saturation.clicked.connect(main.saturation)
-contrast.clicked.connect(main.contrast)
-blur.clicked.connect(main.blur)
+gray.clicked.connect(lambda: main.transformImage('B/W'))
+mirror.clicked.connect(lambda: main.transformImage('Mirror'))
+sharpness.clicked.connect(lambda: main.transformImage('Sharpen'))
+saturation.clicked.connect(lambda: main.transformImage('Color'))
+contrast.clicked.connect(lambda: main.transformImage('Contrast'))
+blur.clicked.connect(lambda: main.transformImage('Blur'))
 
-# Filter list 
-def apply_filter():
-    filter_name = filter_box.currentText()
-    if filter_name == 'Mirror':
-        main.mirror()
-    elif filter_name == 'Sharpness':
-        main.sharpness()
-    elif filter_name == 'B/W':
-        main.gray()
-    elif filter_name == 'Color':
-        main.saturation()
-    elif filter_name == 'Contrast':
-        main.contrast()
-    elif filter_name == 'Blur':
-        main.blur()
-    elif filter_name == 'Original':
-        main.reset()
-
-filter_box.currentIndexChanged.connect(apply_filter)
+filter_box.currentTextChanged.connect(handle_filter)
 
 # Executing App
 main_window.show()
