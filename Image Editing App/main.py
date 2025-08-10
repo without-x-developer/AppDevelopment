@@ -155,14 +155,14 @@ class Editor():
     def saturation(self):
         if self.image:
             enhancer = ImageEnhance.Color(self.image)
-            self.image = enhancer.enhance(2.0)  # Увеличиваем насыщенность в 2 раза
+            self.image = enhancer.enhance(2.0)
             saved_path = self.save_image()
             self.show_image(saved_path)
     
     def contrast(self):
         if self.image:
             enhancer = ImageEnhance.Contrast(self.image)
-            self.image = enhancer.enhance(2.0)  # Увеличиваем контрастность в 2 раза
+            self.image = enhancer.enhance(2.0)
             saved_path = self.save_image()
             self.show_image(saved_path)
     
