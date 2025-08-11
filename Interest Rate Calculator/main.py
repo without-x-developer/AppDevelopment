@@ -1,6 +1,6 @@
 # Importing dependencies
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QTreeView, QMainWindow, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QTreeView, QMainWindow, QMessageBox, QFileDialog, QCheckBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import matplotlib.pyplot as plt 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -32,6 +32,8 @@ class FinanceApp(QMainWindow):
         self.clear_button = QPushButton('Clear')
         self.save_button = QPushButton('Save Data')
 
+        self.dark_mode = QCheckBox("Dark Mode")
+
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
 
@@ -47,6 +49,7 @@ class FinanceApp(QMainWindow):
         self.row1.addWidget(self.inital_input)
         self.row1.addWidget(self.years_text)
         self.row1.addWidget(self.years_input)
+        self.row1.addWidget(self.dark_mode)
 
         self.col1.addWidget(self.tree_view)
         self.col1.addWidget(self.calc_button)
@@ -67,6 +70,40 @@ class FinanceApp(QMainWindow):
         self.calc_button.clicked.connect(self.calc_interest)
         self.clear_button.clicked.connect(self.reset)
         self.save_button.clicked.connect(self.save_data)
+        self.dark_mode.stateChanged.connect(self.toggle_mode)
+
+        self.apply_styles()
+
+    def apply_styles(self):
+        self.setStyleSheet(
+            """
+            FinanceApp {
+                background-color: #f0f0f0;
+            }
+            QLabel, QlineEdit, QPushButton {
+                background-color: #f8f8f8;
+            }
+            QTreeView {
+                background-color: #ffffff;
+            }
+            """
+        )
+        if self.dark_mode.isChecked():
+            self.setStyleSheet(
+                """
+                FinanceApp {
+                    background-color: #333333;
+                }
+                QLabel, QlineEdit, QPushButton {
+                    background-color: #444444;
+                }
+                QTreeView {
+                    background-color: #555555;
+                }
+                """
+            )
+    def toggle_mode(self):
+        self.apply_styles()
 
     def calc_interest(self):
         initial_investment = None
